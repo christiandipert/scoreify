@@ -10,7 +10,7 @@ This application is designed to recognize classical music in real-time using Fas
   - Microphone input (live violin playing).
   - File input (treat an audio file as a mic input).
 - **Precomputed fingerprinting:**
-  - MP3 dataset processed in advance and stored in a RocksDB database.
+  - MP3 dataset processed in advance and stored in a SQLite database.
   - Fingerprints stored in binary format for fast lookups.
 - **Confidence-based match ranking:**
   - Display multiple possible matches if uncertain.
@@ -24,20 +24,27 @@ This application is designed to recognize classical music in real-time using Fas
 
 ## 3. Architecture & Technologies
 
-- **Language:** Rust
-- **GUI Framework:** egui (for real-time visualization)
+- **Language:** C++17
+- **GUI Framework:** Dear ImGui (for real-time visualization)
 - **Audio Processing:**
-  - rodio for playback.
-  - cpal for capturing microphone input.
-  - rustfft for FFT analysis.
-- **Database:** RocksDB (stores fingerprints & metadata)
-- **File Handling:** MP3 files are referenced by path (not copied).
+  - CoreAudio for capture and playback
+  - LAME for MP3 encoding/decoding
+  - FFTW3 for FFT analysis
+- **Database:** SQLite3 (stores fingerprints & metadata)
+- **File Handling:** MP3 files are referenced by path (not copied)
+- **Build System:** CMake
+- **Dependencies:**
+  - libmp3lame
+  - FFTW3
+  - SQLite3
+  - Dear ImGui
+  - GLFW (for window management)
 
 ## 4. Data Handling & Storage
 
 ### Fingerprint Database
 
-- Precomputed fingerprints are stored in RocksDB.
+- Precomputed fingerprints are stored in SQLite3.
 - Each entry consists of:
   - **Piece Metadata:** {title, composer, movement}
   - **Fingerprint Data** (binary, indexed for fast search)
@@ -59,8 +66,8 @@ This application is designed to recognize classical music in real-time using Fas
 
 ## 5. Recognition Pipeline
 
-1. Audio Capture (Microphone/File Input).
-2. Apply FFT & Extract Frequency Peaks.
+1. Audio Capture (CoreAudio Input).
+2. Apply FFT (FFTW3) & Extract Frequency Peaks.
 3. Compare Peaks to Precomputed Database (Allowing for Pitch/Tempo Variations).
 4. Smooth Confidence Over 500ms Window.
 5. Update GUI with Top Matches.
@@ -69,7 +76,7 @@ This application is designed to recognize classical music in real-time using Fas
 
 ## 6. User Interface (GUI Layout)
 
-- **Live Spectrogram Panel** (real-time frequency visualization).
+- **Live Spectrogram Panel** (real-time frequency visualization using Dear ImGui).
 - **Match List Panel** (ranked results + confidence bars).
 - **Status Bar** (shows current mode, processing status, last action).
 - **Audio Playback Controls** (play/pause, seek, volume, stop if new match appears).
